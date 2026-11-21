@@ -1,0 +1,6 @@
+{
+  "name": "Sổ Dạy Học Thông Minh – Smart Teaching",
+  "description": "Ứng dụng quản lý dạy học thông minh dành cho giáo viên dạy thêm, học sinh và phụ huynh: quản lý lớp, hồ sơ học sinh, điểm danh nhanh, bài tập, thống kê học phí và tổng hợp nhận xét phụ huynh bằng AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

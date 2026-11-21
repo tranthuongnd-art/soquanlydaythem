@@ -1,0 +1,460 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Tài khoản người dùng xác thực bằng Số điện thoại & Mật khẩu qua Firebase Authentication với vai trò TEACHER, STUDENT hoặc PARENT.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "displayName": { "type": "string", "maxLength": 120 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "role": { "type": "string", "enum": ["TEACHER", "ASSISTANT", "STUDENT", "PARENT"] },
+        "teacherId": { "type": "string", "maxLength": 128 },
+        "linkedStudentIds": { "type": "array", "description": "Danh sách mã hồ sơ học sinh liên kết (tối đa 10 học sinh cho phụ huynh)." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "displayName", "role", "createdAt", "updatedAt"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Hồ sơ giáo viên và cấu hình không gian dạy học.",
+      "type": "object",
+      "properties": {
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "subjectSpecialty": { "type": "string", "maxLength": 120 },
+        "tuitionRule": { "type": "string", "enum": ["present_and_makeup", "present_only", "present_makeup_unexcused"] },
+        "defaultFeePerSession": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teacherId", "fullName", "email", "tuitionRule", "createdAt", "updatedAt"]
+    },
+    "Assistant": {
+      "title": "Assistant",
+      "description": "Tài khoản Trợ giảng được Giáo viên chính cấp quyền dùng chung không gian quản lý lớp học.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "assistantUid": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["active", "revoked"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "fullName", "email", "status", "createdAt", "updatedAt"]
+    },
+    "TeacherStaff": {
+      "title": "TeacherStaff",
+      "description": "Bản ghi xác thực quyền Trợ giảng đang hoạt động theo khóa ghép teacherId_assistantUid.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "assistantUid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "assistantId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "status": { "type": "string", "enum": ["active"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "assistantUid", "assistantId", "status", "createdAt", "updatedAt"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Hồ sơ học sinh với thông tin liên hệ phụ huynh, SĐT đăng nhập và UID tài khoản đã được giáo viên cấp.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentCode": { "type": "string", "maxLength": 40 },
+        "fullName": { "type": "string", "maxLength": 120 },
+        "dateOfBirth": { "type": "string", "maxLength": 20 },
+        "schoolClass": { "type": "string", "maxLength": 60 },
+        "parentName": { "type": "string", "maxLength": 120 },
+        "studentPhone": { "type": "string", "maxLength": 30 },
+        "fatherPhone": { "type": "string", "maxLength": 30 },
+        "motherPhone": { "type": "string", "maxLength": 30 },
+        "contactInfo": { "type": "string", "maxLength": 300 },
+        "studentEmail": { "type": "string", "maxLength": 160 },
+        "studentUid": { "type": "string", "maxLength": 128 },
+        "parentEmails": { "type": "array", "description": "Tối đa 2 định danh SĐT/email phụ huynh." },
+        "parentUids": { "type": "array", "description": "Tối đa 2 Firebase Auth UID phụ huynh được giáo viên cấp quyền." },
+        "startDate": { "type": "string", "maxLength": 20 },
+        "status": { "type": "string", "enum": ["active", "paused", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "studentCode", "fullName", "parentName", "parentEmails", "parentUids", "startDate", "status", "createdAt", "updatedAt"]
+    },
+    "Parent": {
+      "title": "Parent",
+      "description": "Hồ sơ phụ huynh có thể liên kết với nhiều học sinh.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 160 },
+        "authUid": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "relationship": { "type": "string", "maxLength": 40 },
+        "studentIds": { "type": "array", "description": "Danh sách ID các con (tối đa 10)." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "fullName", "studentIds", "createdAt", "updatedAt"]
+    },
+    "Classroom": {
+      "title": "Classroom",
+      "description": "Lớp học thêm do giáo viên quản lý.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 120 },
+        "subject": { "type": "string", "maxLength": 80 },
+        "gradeLevel": { "type": "string", "maxLength": 40 },
+        "room": { "type": "string", "maxLength": 80 },
+        "feePerSession": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "archived"] },
+        "memberEmails": { "type": "array", "description": "Định danh thành viên lớp (tối đa 100)." },
+        "memberUids": { "type": "array", "description": "Firebase Auth UID học sinh và phụ huynh thuộc lớp (tối đa 100)." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "name", "subject", "gradeLevel", "status", "memberEmails", "memberUids", "createdAt", "updatedAt"]
+    },
+    "ClassEnrollment": {
+      "title": "ClassEnrollment",
+      "description": "Liên kết học sinh tham gia lớp học (hỗ trợ 1 học sinh học nhiều lớp).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentEmail": { "type": "string", "maxLength": 160 },
+        "studentUid": { "type": "string", "maxLength": 128 },
+        "parentEmails": { "type": "array" },
+        "parentUids": { "type": "array" },
+        "status": { "type": "string", "enum": ["active", "transferred", "withdrawn"] },
+        "enrolledAt": { "type": "string", "maxLength": 20 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "classId", "studentId", "parentEmails", "parentUids", "status", "enrolledAt", "createdAt", "updatedAt"]
+    },
+    "Schedule": {
+      "title": "Schedule",
+      "description": "Lịch học định kỳ hàng tuần của lớp.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "dayOfWeek": { "type": "integer" },
+        "startTime": { "type": "string", "maxLength": 10 },
+        "endTime": { "type": "string", "maxLength": 10 },
+        "room": { "type": "string", "maxLength": 80 },
+        "active": { "type": "boolean" },
+        "memberEmails": { "type": "array" },
+        "memberUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "classId", "dayOfWeek", "startTime", "endTime", "active", "memberEmails", "memberUids", "createdAt", "updatedAt"]
+    },
+    "Session": {
+      "title": "Session",
+      "description": "Thông tin chung buổi học (có thể là buổi định kỳ hoặc buổi học bù). Ghi chú nội bộ giáo viên tách sang subcollection riêng.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "className": { "type": "string", "maxLength": 120 },
+        "sessionDate": { "type": "string", "maxLength": 20 },
+        "startTime": { "type": "string", "maxLength": 10 },
+        "endTime": { "type": "string", "maxLength": 10 },
+        "sessionType": { "type": "string", "enum": ["regular", "makeup"] },
+        "lessonContent": { "type": "string", "maxLength": 2000 },
+        "homeworkSummary": { "type": "string", "maxLength": 1500 },
+        "status": { "type": "string", "enum": ["draft", "completed"] },
+        "memberEmails": { "type": "array" },
+        "memberUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "classId", "className", "sessionDate", "startTime", "endTime", "sessionType", "status", "memberEmails", "memberUids", "createdAt", "updatedAt"]
+    },
+    "PrivateTeacherNote": {
+      "title": "PrivateTeacherNote",
+      "description": "Ghi chú nội bộ của giáo viên, tách biệt tuyệt đối khỏi học sinh và phụ huynh.",
+      "type": "object",
+      "properties": {
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "note": { "type": "string", "maxLength": 3000 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teacherId", "note", "updatedAt"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Bản ghi điểm danh của từng học sinh trong từng buổi học.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionDate": { "type": "string", "maxLength": 20 },
+        "sessionType": { "type": "string", "enum": ["regular", "makeup"] },
+        "status": { "type": "string", "enum": ["present", "late", "absent_excused", "absent_unexcused", "makeup"] },
+        "reason": { "type": "string", "maxLength": 300 },
+        "studentEmail": { "type": "string", "maxLength": 160 },
+        "studentUid": { "type": "string", "maxLength": 128 },
+        "parentEmails": { "type": "array" },
+        "parentUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "sessionId", "classId", "studentId", "sessionDate", "sessionType", "status", "parentEmails", "parentUids", "createdAt", "updatedAt"]
+    },
+    "Homework": {
+      "title": "Homework",
+      "description": "Bài tập giao chung cho cả lớp hoặc giao riêng cho từng học sinh, hỗ trợ đính kèm ảnh và sẵn sàng tích hợp AI tạo bài tập cá nhân hóa.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 3000 },
+        "scope": { "type": "string", "enum": ["class", "individual"] },
+        "assignedStudentId": { "type": "string", "maxLength": 128 },
+        "assignedStudentIds": { "type": "array", "description": "Danh sách ID nhiều học sinh được giao bài cùng lúc (tối đa 100)." },
+        "dueDate": { "type": "string", "maxLength": 20 },
+        "attachmentUrl": { "type": "string", "maxLength": 1000 },
+        "attachmentName": { "type": "string", "maxLength": 200 },
+        "targetSkills": { "type": "array", "description": "Kiến thức trọng tâm phục vụ AI tạo bài tập cá nhân hóa giai đoạn sau (tối đa 10)." },
+        "generationSource": { "type": "string", "enum": ["teacher_manual", "ai_personalized_v2"] },
+        "memberEmails": { "type": "array" },
+        "memberUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "classId", "title", "scope", "dueDate", "generationSource", "memberEmails", "memberUids", "createdAt", "updatedAt"]
+    },
+    "HomeworkSubmission": {
+      "title": "HomeworkSubmission",
+      "description": "Bài làm học sinh nộp trực tuyến hoặc đánh dấu hoàn thành cùng nhận xét của giáo viên.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "homeworkId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "status": { "type": "string", "enum": ["pending", "submitted", "reviewed", "late"] },
+        "answerText": { "type": "string", "maxLength": 4000 },
+        "attachmentUrl": { "type": "string", "maxLength": 1000 },
+        "teacherFeedback": { "type": "string", "maxLength": 1500 },
+        "score": { "type": "number" },
+        "studentEmail": { "type": "string", "maxLength": 160 },
+        "studentUid": { "type": "string", "maxLength": 128 },
+        "parentEmails": { "type": "array" },
+        "parentUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "homeworkId", "classId", "studentId", "status", "parentEmails", "parentUids", "createdAt", "updatedAt"]
+    },
+    "Assessment": {
+      "title": "Assessment",
+      "description": "Điểm kiểm tra / đánh giá định kỳ của học sinh.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 160 },
+        "score": { "type": "number" },
+        "maxScore": { "type": "number" },
+        "assessedDate": { "type": "string", "maxLength": 20 },
+        "comment": { "type": "string", "maxLength": 500 },
+        "studentEmail": { "type": "string", "maxLength": 160 },
+        "studentUid": { "type": "string", "maxLength": 128 },
+        "parentEmails": { "type": "array" },
+        "parentUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "classId", "studentId", "title", "score", "maxScore", "assessedDate", "parentEmails", "parentUids", "createdAt", "updatedAt"]
+    },
+    "StudentSessionReview": {
+      "title": "StudentSessionReview",
+      "description": "Đánh giá buổi học của từng học sinh (phần công khai cho phụ huynh và học sinh khi được phép). Ghi chú nội bộ lưu riêng trong subcollection private_notes.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionDate": { "type": "string", "maxLength": 20 },
+        "homeworkStatus": { "type": "string", "enum": ["done_well", "done", "incomplete", "not_done", "not_applicable"] },
+        "homeworkNote": { "type": "string", "maxLength": 500 },
+        "attitudeRating": { "type": "string", "enum": ["excellent", "good", "needs_focus", "not_applicable"] },
+        "attitudeComment": { "type": "string", "maxLength": 600 },
+        "testScore": { "type": "number" },
+        "testMaxScore": { "type": "number" },
+        "hasTestScore": { "type": "boolean" },
+        "weakTopics": { "type": "string", "maxLength": 500 },
+        "parentPrivateMessage": { "type": "string", "maxLength": 1000 },
+        "visibleToStudent": { "type": "boolean" },
+        "studentEmail": { "type": "string", "maxLength": 160 },
+        "studentUid": { "type": "string", "maxLength": 128 },
+        "parentEmails": { "type": "array" },
+        "parentUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "sessionId", "classId", "studentId", "sessionDate", "homeworkStatus", "attitudeRating", "hasTestScore", "visibleToStudent", "parentEmails", "parentUids", "createdAt", "updatedAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Thông báo từ giáo viên gửi tới học sinh và phụ huynh.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 160 },
+        "body": { "type": "string", "maxLength": 2000 },
+        "category": { "type": "string", "enum": ["schedule", "homework", "review", "general"] },
+        "recipientEmails": { "type": "array" },
+        "recipientUids": { "type": "array" },
+        "readByEmails": { "type": "array" },
+        "readByUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "title", "body", "category", "recipientEmails", "recipientUids", "readByEmails", "readByUids", "createdAt", "updatedAt"]
+    },
+    "ParentMessage": {
+      "title": "ParentMessage",
+      "description": "Tin nhắn nhận xét buổi học tổng hợp bằng AI và được giáo viên duyệt trước khi gửi phụ huynh.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "classId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionDate": { "type": "string", "maxLength": 20 },
+        "className": { "type": "string", "maxLength": 120 },
+        "studentName": { "type": "string", "maxLength": 120 },
+        "content": { "type": "string", "maxLength": 4000 },
+        "status": { "type": "string", "enum": ["not_created", "created", "approved", "sent"] },
+        "sentChannel": { "type": "string", "maxLength": 60 },
+        "sentConfirmedAt": { "type": "string", "maxLength": 40 },
+        "parentEmails": { "type": "array" },
+        "parentUids": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "sessionId", "classId", "studentId", "sessionDate", "className", "studentName", "content", "status", "parentEmails", "parentUids", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Thông tin tài khoản đăng nhập bằng SĐT & mật khẩu và phân quyền vai trò."
+    },
+    "/teachers/{teacherId}": {
+      "schema": { "$ref": "#/entities/Teacher" },
+      "description": "Hồ sơ giáo viên và cấu hình quy tắc tính học phí."
+    },
+    "/assistants/{assistantId}": {
+      "schema": { "$ref": "#/entities/Assistant" },
+      "description": "Danh sách Trợ giảng được Giáo viên chính mời/cấp quyền dùng chung không gian dạy học."
+    },
+    "/teacher_staff/{staffId}": {
+      "schema": { "$ref": "#/entities/TeacherStaff" },
+      "description": "Bảng tra cứu thành viên Trợ giảng đang hoạt động (ID: teacherId_assistantUid) để kiểm soát quyền tức thời."
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Hồ sơ học sinh (chỉ giáo viên sở hữu, chính học sinh đó qua UID, và phụ huynh đã cấp UID mới được đọc)."
+    },
+    "/parents/{parentId}": {
+      "schema": { "$ref": "#/entities/Parent" },
+      "description": "Hồ sơ phụ huynh liên kết với 1 hoặc nhiều học sinh."
+    },
+    "/classes/{classId}": {
+      "schema": { "$ref": "#/entities/Classroom" },
+      "description": "Danh sách lớp học thêm."
+    },
+    "/class_enrollments/{enrollmentId}": {
+      "schema": { "$ref": "#/entities/ClassEnrollment" },
+      "description": "Liên kết học sinh - lớp học (ID dạng classId_studentId)."
+    },
+    "/schedules/{scheduleId}": {
+      "schema": { "$ref": "#/entities/Schedule" },
+      "description": "Lịch học định kỳ hàng tuần của lớp."
+    },
+    "/sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/Session" },
+      "description": "Buổi học (ID định danh theo lớp + ngày + giờ để chống trùng lặp)."
+    },
+    "/sessions/{sessionId}/teacher_notes/{noteId}": {
+      "schema": { "$ref": "#/entities/PrivateTeacherNote" },
+      "description": "Ghi chú nội bộ giáo viên cho buổi học — hoàn toàn ẩn với học sinh và phụ huynh."
+    },
+    "/attendance/{attendanceId}": {
+      "schema": { "$ref": "#/entities/Attendance" },
+      "description": "Điểm danh từng học sinh theo từng buổi (ID dạng sessionId_studentId)."
+    },
+    "/homework/{homeworkId}": {
+      "schema": { "$ref": "#/entities/Homework" },
+      "description": "Bài tập về nhà giao chung cả lớp hoặc giao riêng từng học sinh."
+    },
+    "/homework_submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/HomeworkSubmission" },
+      "description": "Bài nộp trực tuyến của học sinh và nhận xét giáo viên."
+    },
+    "/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/Assessment" },
+      "description": "Lịch sử điểm kiểm tra của học sinh."
+    },
+    "/student_session_reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/StudentSessionReview" },
+      "description": "Nhận xét từng buổi của học sinh (ID dạng sessionId_studentId)."
+    },
+    "/student_session_reviews/{reviewId}/private_notes/{noteId}": {
+      "schema": { "$ref": "#/entities/PrivateTeacherNote" },
+      "description": "Ghi chú riêng nội bộ của giáo viên cho từng học sinh — hoàn toàn ẩn với học sinh và phụ huynh."
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "Thông báo của giáo viên gửi tới phụ huynh và học sinh."
+    },
+    "/parent_messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ParentMessage" },
+      "description": "Tin nhắn nhận xét tổng hợp bằng AI gửi phụ huynh theo trạng thái duyệt."
+    }
+  }
+}
